@@ -1,0 +1,15 @@
+version: '2.4'
+
+services:
+   jenkins:
+      image: jenkins/jenkins:lts-jdk11
+      ports:
+         - "8050:8080"
+      mem_limit: 2g
+      restart: always
+
+   sonarqube:
+      image: sonarqube
+      ports:
+         - "9000:9000"
+      mem_limit: 2g

@@ -1,0 +1,80 @@
+plugins {
+    id "java"
+    id "com.diffplug.eclipse.apt" version '3.22.0'
+    id "com.diffplug.gradle.spotless" version "4.0.1"
+    id "org.springframework.boot" version "1.5.22.RELEASE"
+    id "org.seasar.doma.compile" version "1.0.0"
+    id "org.sonarqube" version "3.2.0"
+    id 'jacoco'
+}
+
+version = "2.36.0-beta-1"
+def dependentVersion = version
+def domaSpringBootVersion = "1.4.0"
+
+spotless {
+    java {
+        googleJavaFormat('1.7')
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+springBoot {
+    mainClass = "sample.Application"
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url "https://repo.spring.io/milestone" }
+}
+
+dependencies {
+    annotationProcessor("org.seasar.doma:doma-processor:${dependentVersion}")
+    implementation 'org.springframework.boot:spring-boot-starter-validation:2.3.0.RC1'
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.seasar.doma:doma-core:${dependentVersion}")
+    implementation("org.seasar.doma.boot:doma-spring-boot-starter:${domaSpringBootVersion}")
+    implementation("com.h2database:h2")
+    implementation("org.webjars:jquery:2.1.1")
+    compileOnly("org.springframework.boot:spring-boot-devtools")
+    
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.3.0.RC1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.3.3'
+
+    //Agregado esto para poder usar JUnit3-4 y probar con el framework de JUnit5
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testCompileOnly 'junit:junit:4.13'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+
+eclipse {
+    classpath {
+        file {
+            whenMerged { classpath ->
+                classpath.entries.removeAll { it.path == '.apt_generated' }
+            }
+            withXml { provider ->
+                def node = provider.asNode()
+                // specify output path for .apt_generated
+                node.appendNode( 'classpathentry', [ kind: 'src', output: 'bin/main', path: '.apt_generated'])
+            }
+        }
+    }
+    jdt {
+        javaRuntimeName = 'JavaSE-11'
+    }
+}
